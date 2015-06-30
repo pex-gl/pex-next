@@ -914,29 +914,4 @@ Context.prototype.drawElementsInstanced = function(mode, count, offset, primcoun
     this._gl.drawElementsInstanced(mode, count, this._vertexArrayIndexBufferDataType, offset, primcount);
 };
 
-//NOTE: We keep this for a moment to prevent breaking everything atm.
-Context.prototype.draw = function(mode, first, count){
-    this._updateMatrixUniforms();
-
-    if (this._vertexArrayHasIndexBuffer) {
-        if (this._vertexArrayHasDivisor) {
-            //FIXME: Hardcoded num of instances
-            this._gl.drawElementsInstanced(mode, count, this._vertexArrayIndexBufferDataType, 0, 1000);
-        }
-        else {
-            this._gl.drawElements(mode, count, this._vertexArrayIndexBufferDataType, first);
-        }
-    }
-    else {
-        if (this._vertexArrayHasDivisor) {
-            //FIXME: Hardcoded num of instances
-            this._gl.drawArraysInstanced(mode, first, count, 1000);
-        }
-        else {
-            this._gl.drawArrays(mode, first, count);
-        }
-
-    }
-};
-
 module.exports = Context;

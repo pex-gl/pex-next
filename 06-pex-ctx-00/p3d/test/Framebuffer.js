@@ -213,7 +213,7 @@ Window.create({
             ctx.scale(Vec3.set3(Vec3.create(),scale,scale,scale));
             ctx.bindProgram(this.mrtProgram);
             ctx.bindVertexArray(this.cubeVao);
-            ctx.draw(ctx.TRIANGLES, 0, this.cubeVao.getIndexBuffer().getLength());
+            ctx.drawElements(ctx.TRIANGLES, this.cubeVao.getIndexBuffer().getLength(), 0);
         ctx.bindFramebuffer(null); //TODO: add ctx.unbindFramebuffer?
 
         ctx.bindProgram(this.drawTextureProgram);
@@ -222,19 +222,19 @@ Window.create({
         //TODO: bottom up viewport coords
         ctx.bindTexture(this.colorTex, 0);
         ctx.setViewport(0, this.height/2, this.width/2, this.height/2);
-        ctx.draw(ctx.TRIANGLES, 0, this.quadVao.getIndexBuffer().getLength());
+        ctx.drawElements(ctx.TRIANGLES, this.quadVao.getIndexBuffer().getLength(), 0);
 
         ctx.bindTexture(this.normalTex, 0);
         ctx.setViewport(this.width/2, this.height/2, this.width/2, this.height/2);
-        ctx.draw(ctx.TRIANGLES, 0, this.quadVao.getIndexBuffer().getLength());
+        ctx.drawElements(ctx.TRIANGLES, this.quadVao.getIndexBuffer().getLength(), 0);
 
         ctx.bindTexture(this.lightTex, 0);
         ctx.setViewport(0, 0, this.width/2, this.height/2);
-        ctx.draw(ctx.TRIANGLES, 0, this.quadVao.getIndexBuffer().getLength());
+        ctx.drawElements(ctx.TRIANGLES, this.quadVao.getIndexBuffer().getLength(), 0);
 
         ctx.bindTexture(this.finalTex, 0);
         ctx.setViewport(this.width/2, 0, this.width/2, this.height/2);
-        ctx.draw(ctx.TRIANGLES, 0, this.quadVao.getIndexBuffer().getLength());
+        ctx.drawElements(ctx.TRIANGLES, this.quadVao.getIndexBuffer().getLength(), 0);
 
 
         this.t += 1 / 60;

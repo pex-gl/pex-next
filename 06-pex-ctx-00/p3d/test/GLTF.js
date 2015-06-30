@@ -5,7 +5,7 @@ var Program = require('../Program');
 var Mat4 = require('../../math/Mat4');
 var Mat3 = require('../../math/Mat3');
 var Vec3 = require('../../math/Vec3');
-var loadGLTF = require('../../load-gltf');
+var loadGLTF = require('../../utils/load-gltf');
 var log = require('debug')('example/GLTF');
 
 var logOnceCache = {};
@@ -306,7 +306,7 @@ Window.create({
                             boundingBoxToUpdate.max[2] = Math.max(boundingBoxToUpdate.max[2], tmpVec3[2]);
                         }
                         else {
-                            ctx.draw(ctx.TRIANGLES, offset, count);
+                            ctx.drawElements(ctx.TRIANGLES, count, offset);
                             drawCount++;
                         }
                     }

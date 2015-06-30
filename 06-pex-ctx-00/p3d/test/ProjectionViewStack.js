@@ -120,7 +120,7 @@ Window.create({
         ctx.pushModelMatrix();
             ctx.identity();
             ctx.scale(Vec3.set3(Vec3.create(),scale,scale,scale));
-            ctx.draw(ctx.TRIANGLES, 0, this.vao.getIndexBuffer().getLength());
+            ctx.drawElements(ctx.TRIANGLES, this.vao.getIndexBuffer().getLength(), 0);
         ctx.popModelMatrix();
 
         ctx.pushViewMatrix();
@@ -139,7 +139,7 @@ Window.create({
             ctx.setScissor(0,0,WINDOW_SIZE[0] * 0.25, WINDOW_SIZE[1] * 0.25);
             ctx.setClearColor(1.0,0,0,1.0);
             ctx.clear(ctx.COLOR_BIT | ctx.DEPTH_BIT);
-            ctx.draw(ctx.TRIANGLES,0,this.vao.getIndexBuffer().getLength());
+            ctx.drawElements(ctx.TRIANGLES, this.vao.getIndexBuffer().getLength(), 0);
 
             ctx.setViewMatrix(Mat4.lookAt9(this.viewMatrix,
                     0,
@@ -155,7 +155,7 @@ Window.create({
             ctx.clear(ctx.COLOR_BIT | ctx.DEPTH_BIT);
             ctx.identity();
             ctx.rotate(time,[0,1,0]);
-            ctx.draw(ctx.TRIANGLES,0,this.vao.getIndexBuffer().getLength());
+            ctx.drawElements(ctx.TRIANGLES, this.vao.getIndexBuffer().getLength(), 0);
 
             ctx.setViewMatrix(Mat4.identity(this.viewMatrix));
 

@@ -100,7 +100,7 @@ Window.create({
         data[0] = data[1] = data[2] = data[3] = time;
         this.bufferRewrite.bufferData();
 
-        ctx.draw(ctx.TRIANGLES, 0, this.vao.getIndexBuffer().getLength());
+        ctx.drawElements(ctx.TRIANGLES, this.vao.getIndexBuffer().getLength(), 0);
 
         this.t += 1 / 60;
     }

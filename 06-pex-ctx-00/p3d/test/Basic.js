@@ -77,6 +77,6 @@ Window.create({
         this.program.setUniform('view', this.view);
         this.program.setUniform('uvOffset', [ 0, this.seconds*2 ]);
         ctx.bindVertexArray(this.mesh);
-        ctx.draw(ctx.TRIANGLES, 0, this.mesh.getIndexBuffer().getLength())
+        ctx.drawElements(ctx.TRIANGLES, this.mesh.getIndexBuffer().getLength(), 0);
     }
 })
