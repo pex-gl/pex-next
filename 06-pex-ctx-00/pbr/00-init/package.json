@@ -1,0 +1,16 @@
+{
+    "name": "00-init",
+    "version": "0.0.0",
+    "description": "",
+    "main": "main.js",
+    "scripts": {
+        "start": "browserify -i plask main.js -o main.web.js"
+    },
+    "devDependencies": {
+        "browserify": "^10.2.4"
+    },
+    "dependencies": {
+    },
+    "author": "marcin.ignac@gmail.com",
+    "license": "MIT"
+}

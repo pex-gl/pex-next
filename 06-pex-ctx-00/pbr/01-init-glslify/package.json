@@ -1,0 +1,21 @@
+{
+  "name": "01-init-glslify",
+  "version": "0.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "browserify -i plask main.js -o main.web.js"
+  },
+  "devDependencies": {
+    "browserify": "^10.2.4"
+  },
+  "dependencies": {
+    "glsl-gamma": "^2.0.0",
+    "glsl-specular-blinn-phong": "^1.0.0",
+    "glsl-specular-phong": "^1.0.0",
+    "glslify": "^2.2.1",
+    "glslify-promise": "^1.0.1"
+  },
+  "author": "marcin.ignac@gmail.com",
+  "license": "MIT"
+}
