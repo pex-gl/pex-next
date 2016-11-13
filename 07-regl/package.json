@@ -1,0 +1,21 @@
+{
+  "name": "example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "budo index.js --open --live -- -t glslify"
+  },
+  "author": "Marcin Ignac <marcin.ignac@gmail.com> (http://marcinignac.com/)",
+  "license": "MIT",
+  "dependencies": {
+    "budo": "^9.2.1",
+    "glsl-inverse": "^1.0.0",
+    "glsl-transpose": "^1.0.0",
+    "glslify": "^6.0.1",
+    "pex-gl": "^0.2.1",
+    "pex-math": "^1.0.1",
+    "primitive-cube": "^2.0.0",
+    "regl": "^1.3.0"
+  }
+}
