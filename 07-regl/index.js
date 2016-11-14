@@ -1,5 +1,5 @@
 'use strict'
-const gl = require('pex-gl')(1280, 720)
+const gl = require('./pex-gl')(window.innerWidth, window.innerHeight)
 const regl = require('regl')(gl)
 const Mat4 = require('pex-math/Mat4')
 const createCube = require('primitive-cube')
@@ -7,22 +7,24 @@ const glsl = require('glslify')
 
 const cube = createCube()
 
-const projectionMatrix = Mat4.perspective([], 60, gl.canvas.width / gl.canvas.height, 0.1, 100)
-const viewMatrix = Mat4.lookAt([], [2, 2, 2], [0, 0, 0], [0, 1, 0])
+// const projectionMatrix = Mat4.perspective([], 60, gl.canvas.width / gl.canvas.height, 0.1, 100)
+// const viewMatrix = Mat4.lookAt([], [2, 2, 2], [0, 0, 0], [0, 1, 0])
 const modelMatrix = Mat4.create()
 
 // const camera = require('pex-cam/3d')({
 // const camera = require('pex-cam/persp')({
 // const camera = require('pex-cam/perspective')({
-// const camera = require('../perspective')({
-  // position: [2, 2, 2],
-  // target: [0, 0, 0],
-  // up: [0, 1, 0],
-  // fov: Math.PI / 3, // NEW: (rename to correct name: fovy?), radians not degrees
-  // aspect: gl.canvas.width / gl.canvas.height,
-  // near: 0.1,
-  // far: 100
-// })
+const camera = require('./pex-cam/perspective')({
+  position: [2, 2, 2],
+  target: [0, 0, 0],
+  up: [0, 1, 0],
+  fov: Math.PI / 3, // NEW: (rename to correct name: fovy?), radians not degrees
+  aspect: gl.canvas.width / gl.canvas.height,
+  near: 0.1,
+  far: 100
+})
+
+const arcball = require('./pex-cam/arcball')({ camera: camera })
 
 // NOTES:
 // - regl camera recomputes projectionMatrix every frame based on aspect
@@ -75,20 +77,22 @@ const drawCube = regl({
   }
 })
 
-document.body.style.margin = 0
-window.addEventListener('resize', (e) => {
-  gl.canvas.width = window.innerWidth
-  gl.canvas.height = window.innerHeight
-  Mat4.perspective(projectionMatrix, 60, gl.canvas.width / gl.canvas.height, 0.1, 100)
-  // camera({ aspect: gl.canvas.width / gl.canvas.height })
-})
+if (typeof (document) !== 'undefined') {
+  document.body.style.margin = 0
+  window.addEventListener('resize', (e) => {
+    gl.canvas.width = window.innerWidth
+    gl.canvas.height = window.innerHeight
+    // Mat4.perspective(projectionMatrix, 60, gl.canvas.width / gl.canvas.height, 0.1, 100)
+    camera({ aspect: gl.canvas.width / gl.canvas.height })
+  })
+}
 
 // i can pass matrices by reference here but i can in drawing command
 // in drawing command the matrix uniforms have to made dynamic to update every frame
 const setupCamera = regl({
 	context: {
-		projectionMatrix: projectionMatrix,
-		viewMatrix: viewMatrix
+		projectionMatrix: camera.projectionMatrix,
+		viewMatrix: camera.viewMatrix
 	}
 })
 

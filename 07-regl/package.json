@@ -13,6 +13,7 @@
     "glsl-inverse": "^1.0.0",
     "glsl-transpose": "^1.0.0",
     "glslify": "^6.0.1",
+    "pex-geom": "^1.0.0-beta.2",
     "pex-gl": "^0.2.1",
     "pex-math": "^1.0.1",
     "primitive-cube": "^2.0.0",
