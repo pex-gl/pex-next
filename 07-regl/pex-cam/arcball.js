@@ -18,6 +18,7 @@ function getViewRay (camera, x, y, windowWidth, windowHeight) {
 }
 
 // TOOD: issues to consider
+// - using canvas element instead of window for events
 // - window resizing
 // - fullscreen vs local canvas
 // - scroll prevention
@@ -29,6 +30,7 @@ function getViewRay (camera, x, y, windowWidth, windowHeight) {
 function createArcball (opts) {
   const distance = Vec3.distance(opts.camera.position, opts.camera.target)
 
+  // todo split into internal state and public state
   const state = {
     camera: opts.camera,
     invViewMatrix: Mat4.create(),
@@ -61,7 +63,17 @@ function createArcball (opts) {
   Object.assign(state, opts)
 
   function arcball (opts) {
-    return Object.assign(arcball, state)
+    // TODO recompute on state change
+    return Object.assign(arcball, state, opts)
+  }
+
+  function updateWindowSize () {
+    if (window.innerWidth !== state.width) {
+      state.width = window.innerWidth
+      state.height = window.innerHeight
+      state.radius = Math.min(state.width / 2, state.height / 2)
+      state.center = [state.width / 2, state.height / 2]
+    }
   }
 
   function updateCamera () {
@@ -184,6 +196,7 @@ function createArcball (opts) {
   }
 
   function onMouseDown (e) {
+    updateWindowSize()
     down(e.clientX, e.clientY, e.shiftKey)
   }
 
