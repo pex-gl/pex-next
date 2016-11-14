@@ -19,6 +19,7 @@ function getViewRay (camera, x, y, windowWidth, windowHeight) {
 
 // TOOD: issues to consider
 // - using canvas element instead of window for events
+// = should arcball update Camera aspect ratio?
 // - window resizing
 // - fullscreen vs local canvas
 // - scroll prevention
@@ -30,7 +31,7 @@ function getViewRay (camera, x, y, windowWidth, windowHeight) {
 function createArcball (opts) {
   const distance = Vec3.distance(opts.camera.position, opts.camera.target)
 
-  // todo split into internal state and public state
+  // TODO: split into internal state and public state
   const state = {
     camera: opts.camera,
     invViewMatrix: Mat4.create(),
