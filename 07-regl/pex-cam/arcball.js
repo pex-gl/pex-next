@@ -31,6 +31,7 @@ function createArcball (opts) {
 
   const state = {
     camera: opts.camera,
+    invViewMatrix: Mat4.create(),
     dragging: false,
     elem: window,
     width: window.innerWidth,
@@ -149,9 +150,10 @@ function createArcball (opts) {
         state.panPlane[1],
         state.dragPosPlane
       )
-      const invViewMatrix = Mat4.invert(Mat4.copy(state.camera.viewMatrix))
-      Vec3.multMat4(Vec3.set(state.clickPosWorld, state.clickPosPlane), invViewMatrix)
-      Vec3.multMat4(Vec3.set(state.dragPosWorld, state.dragPosPlane), invViewMatrix)
+      Mat4.set(state.invViewMatrix, state.camera.viewMatrix)
+      Mat4.invert(state.invViewMatrix)
+      Vec3.multMat4(Vec3.set(state.clickPosWorld, state.clickPosPlane), state.invViewMatrix)
+      Vec3.multMat4(Vec3.set(state.dragPosWorld, state.dragPosPlane), state.invViewMatrix)
       const diffWorld = Vec3.sub(Vec3.copy(state.dragPosWorld), state.clickPosWorld)
       const target = Vec3.sub(Vec3.copy(state.clickTarget), diffWorld)
       state.camera({ target: target })
