@@ -4,7 +4,7 @@
   "description": "",
   "main": "06-draw-call.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "budo 06-draw-call.js --live --open -- -t glslify"
   },
   "author": "Marcin Ignac <marcin.ignac@gmail.com> (http://marcinignac.com/)",
   "license": "MIT",
