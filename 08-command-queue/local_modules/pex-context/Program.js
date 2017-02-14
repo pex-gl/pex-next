@@ -121,6 +121,16 @@ Program.prototype._updateUniforms = function(){
             type : info.type,
             location : gl.getUniformLocation(program, name)
         };
+        if (info.size > 1) {
+          for (var j = 1; j < info.size; j++) {
+            var name = info.name.substr(0, info.name.indexOf('[') + 1) + j + ']'
+            console.log('glsl', name, gl.getUniformLocation(program, name), info.type, gl.FLOAT_VEC3)
+            uniforms[name] = {
+                type : info.type,
+                location : gl.getUniformLocation(program, name)
+            };
+          }
+        }
     }
 };
 
@@ -205,6 +215,7 @@ Program.prototype._updateUniformSetterMap = function(){
                             throw new Error(STR_ERROR_WRONG_NUM_ARGS);
                         }
                         if(y === undefined){
+                          // console.log('glsl', entry)
                             gl.uniform3fv(location,x);
                         }
                         else {

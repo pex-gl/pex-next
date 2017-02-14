@@ -1,6 +1,6 @@
+#extension GL_OES_standard_derivatives : enable
 #ifdef GL_ES
 precision highp float;
-#extension GL_OES_standard_derivatives : enable
 #pragma glslify: transpose = require('glsl-transpose')
 #endif
 
@@ -20,6 +20,29 @@ uniform sampler2D uRoughnessMap;
 uniform sampler2D uMetalnessMap;
 uniform sampler2D uEnvMap;
 uniform mat4 uInvViewMatrix;
+uniform vec3 uSh[9];
+
+vec3 sh(const vec3 sph[9], const in vec3 normal) {
+  float x = normal.x;
+  float y = normal.y;
+  float z = normal.z;
+
+  vec3 result = (
+        sph[0] +
+
+        sph[1] * y +
+        sph[2] * z +
+        sph[3] * x +
+
+        sph[4] * y * x +
+        sph[5] * y * z +
+        sph[6] * (3.0 * z * z - 1.0) +
+        sph[7] * (z * x) +
+        sph[8] * (x*x - y*y)
+    );
+
+  return max(result, vec3(0.0));
+}
 
 float G1V(float dotNV, float k) {
   return 1.0/(dotNV*(1.0-k)+k);
@@ -85,9 +108,16 @@ vec3 LUVToRGB( const in vec4 vLogLuv ) {
     return max(vRGB, 0.0);
 }
 
+const float RGBMMaxRange = 8.0;
+vec3 RGBMToRGB( const in vec4 vRGBM) {
+  return vRGBM.rgb * vRGBM.a * RGBMMaxRange;
+}
+
+// fix edge bleeding
+// https://github.com/cedricpinson/osgjs/blob/53ad3dd0126528417ba220c29d258a5fe9c13c81/examples/pbr/shaders/panoramaSampler.glsl
 vec2 panoramaLevel(vec2 texCoord, float level, float size) {
   float maxLevel = log2(size) - 1.0; //e.g. 1024 / 2 because of aspect ratio
-  vec2 offset = vec2(0.0, (size / 2.0 - pow(2.0, maxLevel - level) - 1.0) / (size / 2.0));
+  vec2 offset = vec2(0.0, (size / 2.0 - pow(2.0, maxLevel - level) ) / (size / 2.0));
   vec2 scale = vec2(1.0 / pow(2.0, level), 1.0 / pow(2.0, level + 1.0));
   return texCoord * scale + offset;
 }
@@ -122,6 +152,14 @@ vec2 envMapEquirect(vec3 wcNormal) {
     return envMapEquirect(wcNormal, -1.0);
 }
 
+mat3 getEnvironmentTransfrom( mat4 transform ) {
+    vec3 x = vec3(transform[0][0], transform[1][0], transform[2][0]);
+    vec3 y = vec3(transform[0][1], transform[1][1], transform[2][1]);
+    vec3 z = vec3(transform[0][2], transform[1][2], transform[2][2]);
+    mat3 m = mat3(x,y,z);
+    return m;
+}
+
 void main () {
   vec3 Q1 = dFdx(vPositionView);
   vec3 Q2 = dFdy(vPositionView);
@@ -141,24 +179,30 @@ void main () {
   vec3 V = normalize(-vPositionView);
   vec3 R = reflect(-V, N);
   vec3 Rworld = vec3(uInvViewMatrix * vec4(R, 0.0));
+  vec3 Nworld = vec3(uInvViewMatrix * vec4(N, 0.0));
   float diffuse = max(0.0, dot(N, L));
 
   float N0 = 0.02; // what's the default for non metals vs metals?
   float roughness = texture2D(uRoughnessMap, vTexCoord).r;
   float metalness = texture2D(uMetalnessMap, vTexCoord).r;
-  float level = floor(roughness * 6.0);
-  vec3 indirectSpecular = LUVToRGB(texture2D(uEnvMap, panoramaLevel(envMapEquirect(Rworld), level, 1024.0)));
+  float level = floor(roughness * 5.0);
+  // vec3 indirectSpecular = LUVToRGB(texture2D(uEnvMap, panoramaLevel(envMapEquirect(Rworld), level, 1024.0)));
+  vec3 indirectSpecular = RGBMToRGB(texture2D(uEnvMap, panoramaLevel(envMapEquirect(Rworld), level, 1024.0)));
   float specular = LightingFuncGGX(N, V, L, roughness, N0);
-  vec3 lightColor = toLinear(vec3(0.5));
+  vec3 lightColor = toLinear(vec3(0.95));
   vec3 albedo = toLinear(texture2D(uAlbedoMap, vTexCoord).rgb);
-  vec3 ambient = toLinear(vec3(0.3));
+  vec3 indirectDiffuse = sh(uSh, Nworld);
   vec3 color = vec3(0.0);
-  color += albedo * ambient * (1.0 - metalness);
+  color += indirectDiffuse * albedo * (1.0 - metalness);
+  color += albedo * indirectSpecular * metalness;
   color += albedo * diffuse * lightColor * (1.0 - metalness);
   color += specular * lightColor;
-  color += albedo * indirectSpecular * metalness;
+  // color = indirectDiffuse / 5.0;
+  // color = albedo;
 
-  color = tonemapFilmic(color);
+  // color *= 1.2;
+
+  // color = tonemapFilmic(color);
   gl_FragColor.rgb = toGamma(color);
   gl_FragColor.a = 1.0;
 }

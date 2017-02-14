@@ -13,6 +13,7 @@
     "gl-constants": "^1.0.0",
     "glsl-gamma": "^2.0.0",
     "glsl-inverse": "^1.0.0",
+    "glsl-sh": "^0.1.0",
     "glsl-transpose": "^1.0.0",
     "glslify": "^6.0.1",
     "is-browser": "^2.0.1",
