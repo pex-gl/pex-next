@@ -1,0 +1,103 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "pex-context@^1.3.0",
+        "scope": null,
+        "escapedName": "pex-context",
+        "name": "pex-context",
+        "rawSpec": "^1.3.0",
+        "spec": ">=1.3.0 <2.0.0",
+        "type": "range"
+      },
+      "/Users/gom/Workspace/var-bwa-garden"
+    ]
+  ],
+  "_from": "pex-context@>=1.3.0 <2.0.0",
+  "_id": "pex-context@1.3.0",
+  "_inCache": true,
+  "_location": "/pex-context",
+  "_nodeVersion": "5.3.0",
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/pex-context-1.3.0.tgz_1467368181974_0.330293582752347"
+  },
+  "_npmUser": {
+    "name": "vorg",
+    "email": "marcin.ignac@gmail.com"
+  },
+  "_npmVersion": "3.3.12",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "pex-context@^1.3.0",
+    "scope": null,
+    "escapedName": "pex-context",
+    "name": "pex-context",
+    "rawSpec": "^1.3.0",
+    "spec": ">=1.3.0 <2.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/pex-context/-/pex-context-1.3.0.tgz",
+  "_shasum": "919d58a4d3e33ca66c19dd8374f22a5c571d51c4",
+  "_shrinkwrap": null,
+  "_spec": "pex-context@^1.3.0",
+  "_where": "/Users/gom/Workspace/var-bwa-garden",
+  "author": {
+    "name": "Henryk Wollik",
+    "email": "hwollik@hotmail.com",
+    "url": "http://henrykwollik.com"
+  },
+  "bugs": {
+    "url": "https://github.com/pex-gl/pex-context/issues"
+  },
+  "contributors": [
+    {
+      "name": "Marcin Ignac",
+      "email": "marcin.ignac@gmail.com",
+      "url": "http://marcinignac.com"
+    }
+  ],
+  "dependencies": {
+    "is-plask": "^1.1.0",
+    "plask-wrap": "^1.0.0"
+  },
+  "description": "Thin WebGL wrapper for state stack and resource management for the pex library",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "919d58a4d3e33ca66c19dd8374f22a5c571d51c4",
+    "tarball": "https://registry.npmjs.org/pex-context/-/pex-context-1.3.0.tgz"
+  },
+  "gitHead": "7a2f011211359c9ad4bf7d506abd70cc16155b5d",
+  "homepage": "https://github.com/pex-gl/pex-context",
+  "keywords": [
+    "pex",
+    "webgl"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "automat",
+      "email": "hwollik@hotmail.com"
+    },
+    {
+      "name": "vorg",
+      "email": "marcin.ignac@gmail.com"
+    }
+  ],
+  "name": "pex-context",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pex-gl/pex-context.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "1.3.0"
+}

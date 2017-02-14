@@ -1,0 +1,37 @@
+{
+  "name": "pex-gltf",
+  "version": "1.0.0",
+  "description": "glTF loader for the pex library",
+  "main": "index.js",
+  "license": "MIT",
+  "author": {
+    "name": "Marcin Ignac",
+    "email": "marcin.ignac@gmail.com",
+    "url": "https://github.com/vorg"
+  },
+  "dependencies": {
+    "async": "^1.4.2",
+    "debug": "^2.2.0",
+    "iterate-object": "^1.1.0",
+    "pex-geom": "^1.0.0-beta.2",
+    "pex-io": "pex-gl/pex-io",
+    "simple-loop": "0.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "webgl,",
+    "gltf,",
+    "pex"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/pex-gl/pex-gltf.git"
+  },
+  "homepage": "https://github.com/pex-gl/pex-gltf",
+  "bugs": {
+    "url": "https://github.com/pex-gl/pex-gltf/issues"
+  }
+}
