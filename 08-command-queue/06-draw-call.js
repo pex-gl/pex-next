@@ -100,7 +100,7 @@ void main () {
 const camera = createCamera({
   fov: 45,
   aspect: gl.canvas.width / gl.canvas.height,
-  position: [0, 1, 2],
+  position: [-2, 0.5, -2],
   target: [0, 0, 0]
 })
 
@@ -208,6 +208,10 @@ const quadPipelineDesc = {
       vec3 vRGB = LUVInverse * Xp_Y_XYZp;
       return max(vRGB, 0.0);
   }
+  const float RGBMMaxRange = 8.0;
+  vec3 RGBMToRGB( const in vec4 vRGBM) {
+    return vRGBM.rgb * vRGBM.a * RGBMMaxRange;
+  }
   varying vec2 vTexCoord;
   uniform sampler2D uEnvMap;
 
@@ -220,7 +224,8 @@ const quadPipelineDesc = {
     float maxLevel = 8.0;
     vec2 offset = vec2(0.0, (size / 2.0 - pow(2.0, maxLevel + 1.0 - level) - 1.0) / (size / 2.0));
     vec2 scale = vec2(1.0 / pow(2.0, level), 1.0 / pow(2.0, level + 1.0));
-    gl_FragColor.rgb = LUVToRGB(texture2D(uEnvMap, vTexCoord * scale + offset));
+    // gl_FragColor.rgb = LUVToRGB(texture2D(uEnvMap, vTexCoord * scale + offset));
+    gl_FragColor.rgb = RGBMToRGB(texture2D(uEnvMap, vTexCoord));
     gl_FragColor.a = 1.0;
   }
   `,
@@ -358,19 +363,15 @@ function draw () {
     drawVertexData(pipeline, entity)
     // drawVertexData(pipeline, vertexData)
   })
+
+  // draw full screen quad
   // setPipeline(quadPipeline)
   // drawVertexData(quadPipeline, quadVertexData)
+  // gl.bindBuffer(vertexData.elements.buffer._target, vertexData.elements.buffer._handle)
+  // var primitive = gl.TRIANGLES
+  // var count = vertexData.elements.buffer._length
+  // gl.drawElements(primitive, count, ctx.UNSIGNED_SHORT, 0)
 
-  // this is wrong, it should be upside down, driven by pipeline not data
-
-  /*
-
-  gl.bindBuffer(vertexData.elements.buffer._target, vertexData.elements.buffer._handle)
-  var primitive = gl.TRIANGLES
-  var count = vertexData.elements.buffer._length
-  gl.drawElements(primitive, count, ctx.UNSIGNED_SHORT, 0)
-
-  */
 
   var error = gl.getError()
   if (error) {
@@ -533,10 +534,43 @@ function deinterleaveImage4 (size, src, dst) {
   }
 }
 
+function initSH (sh) {
+  var coef0 = 1.0 / ( 2.0 * Math.sqrt( Math.PI ) )
+  var coef1 = -( Math.sqrt( 3.0 / Math.PI ) * 0.5 )
+  var coef2 = -coef1
+  var coef3 = coef1
+  var coef4 = Math.sqrt( 15.0 / Math.PI ) * 0.5
+  var coef5 = -coef4
+  var coef6 = Math.sqrt( 5.0 / Math.PI ) * 0.25
+  var coef7 = coef5
+  var coef8 = Math.sqrt( 15.0 / Math.PI ) * 0.25
+
+  var coef = [
+    coef0, coef0, coef0,
+    coef1, coef1, coef1,
+    coef2, coef2, coef2,
+    coef3, coef3, coef3,
+    coef4, coef4, coef4,
+    coef5, coef5, coef5,
+    coef6, coef6, coef6,
+    coef7, coef7, coef7,
+    coef8, coef8, coef8,
+  ];
+
+  return coef.map( function ( value, index ) {
+    return value * sh[ index ];
+  })
+}
+
 load({
-  // envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_luv.bin' }
-  envMap: { binary: 'assets/envmaps/unity_trinitatis_church/specular_panorama_ue4_1024_luv.bin' },
-  envMapConfig: { json: 'assets/envmaps/unity_trinitatis_church/config.json' }
+  // envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_luv.bin' },
+  // envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_rgbm.bin' },
+  // envMapConfig: { json: 'assets/envmaps/unity_muirwood/config.json' }
+  // envMap: { binary: 'assets/envmaps/unity_trinitatis_church/specular_panorama_ue4_1024_luv.bin' },
+  // envMap: { binary: 'assets/envmaps/unity_trinitatis_church/specular_panorama_ue4_1024_rgbm.bin' },
+  // envMapConfig: { json: 'assets/envmaps/unity_trinitatis_church/config.json' },
+  envMap: { binary: 'assets/envmaps/unity_kirby_cove/specular_panorama_ue4_1024_rgbm.bin' },
+  envMapConfig: { json: 'assets/envmaps/unity_kirby_cove/config.json' }
 }, (err, res) => {
   if (err) console.log(err)
   try {
@@ -544,6 +578,14 @@ load({
     var data = new Uint8Array(res.envMap)
     envMap = ctx.createTexture2D(data, 1024, 1024, {
     })
+
+    // TODO: this is hack, uniforms should be somehow set after the pipeline is build
+    // need to multiply values by basis functions
+    var sh = initSH(res.envMapConfig.diffuseSPH);
+    for (var i = 0; i < 9; i++) {
+      pipeline.uniforms[`uSh[${i}]`] = [sh[i * 3], sh[i * 3 + 1], sh[i * 3 + 2]]
+      console.log('glsl', pipeline.uniforms)
+    }
 
     console.time('load')
     loadGltf(MODEL_PATH, function (err, json) {
