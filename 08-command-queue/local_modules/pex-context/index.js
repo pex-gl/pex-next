@@ -23,6 +23,7 @@ function createContext (gl) {
     ctx: new Context(gl),
     state: { },
     texture2D: function (data, width, height) {
+      log('texture2D', data, width, height)
       return this.ctx.createTexture2D(data, width, height)
     },
     // TODO: Should we have named versions or generic 'ctx.buffer' command?
@@ -54,6 +55,7 @@ function createContext (gl) {
           }
         }
         cmd.program = this.program(spec.vert, spec.frag, R.pluck(0, spec.vertexLayout))
+        log('Uniforms', cmd.program._uniforms)
       }
       return cmd
     },
@@ -61,7 +63,7 @@ function createContext (gl) {
       const gl = this.gl
       let clearBits = 0
 
-      console.log('submit', cmd)
+      // log('submit', cmd)
 
       if (cmd.clearColor !== undefined) {
         clearBits |= gl.COLOR_BUFFER_BIT
@@ -90,11 +92,14 @@ function createContext (gl) {
       if (cmd.uniforms) {
         let numTextures = 0
         Object.keys(cmd.uniforms).forEach((name) => {
-          const value = cmd.uniforms[name]
+          let value = cmd.uniforms[name]
+          if (typeof(value) === 'function') {
+           // log('eval', name)
+            value = value()
+          }
           // FIXME: uniform array hack
           if (Array.isArray(value) && !this.state.program._uniforms[name]) {
             value.forEach((val, i) => {
-              log('setting uniform', name, `${name}[${i}]`, i, val)
               this.state.program.setUniform(`${name}[${i}]`, val)
             })
           } else if (value.getTarget) {

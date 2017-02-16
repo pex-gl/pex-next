@@ -44,7 +44,7 @@ let setupPbr = null
 let envMap = null
 
 function init (res) {
-  envMap = ctx.texture2D(new Uint8Array(res.envMap, 1024, 1024))
+  envMap = ctx.texture2D(new Uint8Array(res.envMap), 1024, 1024)
 
   // TODO: this is hack, uniforms should be somehow set after the pipeline is build
   // need to multiply values by basis functions
@@ -67,8 +67,8 @@ function init (res) {
     uniforms: {
       uSh: sh,
       uProjectionMatrix: camera.projectionMatrix,
-      uViewMatrix: camera.viewMatrix,
-      uInvViewMatrix: Mat4.invert(Mat4.copy(camera.viewMatrix)),
+      uViewMatrix: () => camera.viewMatrix,
+      uInvViewMatrix: () => Mat4.invert(Mat4.copy(camera.viewMatrix)),
       uLightPos: [5, 3, 10]
     }
   })
@@ -189,16 +189,16 @@ function buildGLTFModel (json) {
           offset: primitive.attributes.POSITION.byteOffset,
           stride: primitive.attributes.POSITION.byteStride
         },
+        aTexCoord0: {
+          buffer: primitive.attributes.TEXCOORD_0.bufferView._buffer,
+          offset: primitive.attributes.TEXCOORD_0.byteOffset,
+          stride: primitive.attributes.TEXCOORD_0.byteStride
+        },
         aNormal: {
           buffer: primitive.attributes.NORMAL.bufferView._buffer,
           offset: primitive.attributes.NORMAL.byteOffset,
           stride: primitive.attributes.NORMAL.byteStride
         },
-        aTexCoord0: {
-          buffer: primitive.attributes.TEXCOORD_0.bufferView._buffer,
-          offset: primitive.attributes.TEXCOORD_0.byteOffset,
-          stride: primitive.attributes.TEXCOORD_0.byteStride
-        }
       }
 
       const elements = { buffer: primitive.indices.bufferView._buffer }
@@ -266,13 +266,13 @@ function initSH (sh) {
 
 load({
   // envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_luv.bin' },
-  // envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_rgbm.bin' },
-  // envMapConfig: { json: 'assets/envmaps/unity_muirwood/config.json' }
+  envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_rgbm.bin' },
+  envMapConfig: { json: 'assets/envmaps/unity_muirwood/config.json' }
   // envMap: { binary: 'assets/envmaps/unity_trinitatis_church/specular_panorama_ue4_1024_luv.bin' },
   // envMap: { binary: 'assets/envmaps/unity_trinitatis_church/specular_panorama_ue4_1024_rgbm.bin' },
   // envMapConfig: { json: 'assets/envmaps/unity_trinitatis_church/config.json' },
-  envMap: { binary: 'assets/envmaps/unity_kirby_cove/specular_panorama_ue4_1024_rgbm.bin' },
-  envMapConfig: { json: 'assets/envmaps/unity_kirby_cove/config.json' }
+  // envMap: { binary: 'assets/envmaps/unity_kirby_cove/specular_panorama_ue4_1024_rgbm.bin' },
+  // envMapConfig: { json: 'assets/envmaps/unity_kirby_cove/config.json' }
 }, (err, res) => {
   try {
     if (err) log('Resource loading failed', err)

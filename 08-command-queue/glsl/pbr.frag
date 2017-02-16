@@ -20,6 +20,7 @@ uniform sampler2D uRoughnessMap;
 uniform sampler2D uMetalnessMap;
 uniform sampler2D uEnvMap;
 uniform mat4 uInvViewMatrix;
+uniform mat4 uViewMatrix;
 uniform vec3 uSh[9];
 
 vec3 sh(const vec3 sph[9], const in vec3 normal) {
@@ -174,12 +175,14 @@ void main () {
 
   vec3 normalTangent = normalize(texture2D(uNormalMap, vTexCoord).rgb * 2.0 - 1.0);
   vec3 lightPos = normalize(vec3(1.0, 1.0, 1.0));
-  vec3 N = normalTangent * TBN;
+  vec3 N = normalize(normalTangent * TBN);
   vec3 L = normalize(vLightPosView - vPositionView);
   vec3 V = normalize(-vPositionView);
-  vec3 R = reflect(-V, N);
-  vec3 Rworld = vec3(uInvViewMatrix * vec4(R, 0.0));
-  vec3 Nworld = vec3(uInvViewMatrix * vec4(N, 0.0));
+  vec3 R = (reflect(-V, N));
+  mat4 invViewMatrix = uInvViewMatrix;
+  invViewMatrix = inverse(uViewMatrix);
+  vec3 Rworld = vec3(invViewMatrix * vec4(R, 0.0));
+  vec3 Nworld = vec3(invViewMatrix * vec4(N, 0.0));
   float diffuse = max(0.0, dot(N, L));
 
   float N0 = 0.02; // what's the default for non metals vs metals?
@@ -199,12 +202,17 @@ void main () {
   color += specular * lightColor;
   // color = indirectDiffuse / 5.0;
   // color = albedo;
-  // color = roughness;
+  // color = vec3(roughness);
+  // color = vec3(specular);
   // color = indirectSpecular;
+  // color = R;
+  // color = vec3(vTexCoord, 0.0);
 
-  // color *= 1.2;
+  // float exposure = 1.2;
+  // color *= exposure;
 
-  // color = tonemapFilmic(color);
+  color = tonemapFilmic(color); // TODO: does it have built in gamma?
   gl_FragColor.rgb = toGamma(color);
+  // gl_FragColor.rgb = color;
   gl_FragColor.a = 1.0;
 }
