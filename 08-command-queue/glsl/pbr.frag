@@ -199,6 +199,8 @@ void main () {
   color += specular * lightColor;
   // color = indirectDiffuse / 5.0;
   // color = albedo;
+  // color = roughness;
+  // color = indirectSpecular;
 
   // color *= 1.2;
 
