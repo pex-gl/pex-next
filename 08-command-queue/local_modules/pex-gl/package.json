@@ -1,0 +1,94 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "pex-gl",
+        "scope": null,
+        "escapedName": "pex-gl",
+        "name": "pex-gl",
+        "rawSpec": "",
+        "spec": "latest",
+        "type": "tag"
+      },
+      "/Users/vorg/Workspace/vorg-pex-modules/pex-modules/pex-next/08-command-queue"
+    ]
+  ],
+  "_from": "pex-gl@latest",
+  "_id": "pex-gl@1.4.1",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/pex-gl",
+  "_nodeVersion": "6.7.0",
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/pex-gl-1.4.1.tgz_1485647201942_0.5374694908969104"
+  },
+  "_npmUser": {
+    "name": "vorg",
+    "email": "marcin.ignac@gmail.com"
+  },
+  "_npmVersion": "3.10.3",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "pex-gl",
+    "scope": null,
+    "escapedName": "pex-gl",
+    "name": "pex-gl",
+    "rawSpec": "",
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/pex-gl/-/pex-gl-1.4.1.tgz",
+  "_shasum": "9bd15baf5cf32b754e39fef9e3bce4c4c0233356",
+  "_shrinkwrap": null,
+  "_spec": "pex-gl",
+  "_where": "/Users/vorg/Workspace/vorg-pex-modules/pex-modules/pex-next/08-command-queue",
+  "author": {
+    "name": "Marcin Ignac",
+    "email": "marcin.ignac@gmail.com",
+    "url": "https://github.com/vorg"
+  },
+  "browser": "index-browser.js",
+  "bugs": {
+    "url": "https://github.com/pex-gl/pex-gl/issues"
+  },
+  "dependencies": {
+    "is-plask": "^1.1.1"
+  },
+  "description": "Create a WebGL context in Plask or in a web browser",
+  "devDependencies": {},
+  "directories": {},
+  "dist": {
+    "shasum": "9bd15baf5cf32b754e39fef9e3bce4c4c0233356",
+    "tarball": "https://registry.npmjs.org/pex-gl/-/pex-gl-1.4.1.tgz"
+  },
+  "gitHead": "2d9976800bc8f68f8283171334caa32327cf0718",
+  "homepage": "https://github.com/pex-gl/pex-gl",
+  "keywords": [
+    "pex,",
+    "webgl"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "vorg",
+      "email": "marcin.ignac@gmail.com"
+    }
+  ],
+  "name": "pex-gl",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/pex-gl/pex-gl.git"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "version": "1.4.1"
+}
