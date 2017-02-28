@@ -7,6 +7,12 @@ var isBrowser = !require('is-plask');
  * - no support for automatically created textures as color targets
  * - no support for automatically created depth render buffers or textures as depth targets
  */
+
+function glConstant(gl, c) {
+  for (i in gl) {
+    if (gl[i] == c) return i
+  }
+}
 function Framebuffer(ctx, colorAttachments, depthAttachment) {
     this._ctx = ctx;
     var gl = ctx.getGL();
@@ -55,8 +61,13 @@ function Framebuffer(ctx, colorAttachments, depthAttachment) {
         var target = depthTexture.getTarget() || depthAttachment.target;
         var level = depthAttachment.level || 0;
         var handle = depthTexture.getHandle();
+        console.log(gl.getError())
+        console.log(glConstant(gl, gl.checkFramebufferStatus(gl.FRAMEBUFFER)))
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, target, handle, level);
+        console.log(gl.getError())
+        console.log(glConstant(gl, gl.checkFramebufferStatus(gl.FRAMEBUFFER)))
         this._depthAttachment = depthAttachment;
+        // TODO: throw on error
     }
 
     //TODO: unbind -> pop?

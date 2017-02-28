@@ -8,10 +8,9 @@ var warn = require('debug')('pex/gltf/warn')
 var path = require('path')
 var async = require('async')
 var iterateObject = require('iterate-object')
-
+var isBrowser = require('is-browser')
 
 function loadImageBrowser (url, callback, crossOrigin) {
-  console.log('cors', crossOrigin)
   var img = new window.Image()
   if (crossOrigin) {
     img.crossOrigin = 'anonymous'
@@ -22,7 +21,9 @@ function loadImageBrowser (url, callback, crossOrigin) {
   img.src = url
 }
 
-loadImage = loadImageBrowser
+if (isBrowser) {
+  loadImage = loadImageBrowser
+}
 
 var WebGLConstants = {
   34963: 'ELEMENT_ARRAY_BUFFER',  // 0x8893
@@ -209,7 +210,6 @@ function handleImage (ctx, json, basePath, imageName, imageInfo, callback) {
   log('handleImage', imageInfo.uri)
   if (imageInfo.uri) {
     var url = basePath + '/' + imageInfo.uri
-    console.log(loadImage.toString())
     loadImage(url, function (err, img) {
       if (err) {
         log('handleImage', err.toString())

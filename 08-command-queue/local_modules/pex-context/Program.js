@@ -81,7 +81,6 @@ Program.prototype.update = function(vertSrc, fragSrc, attributeLocationBinding){
     var numAttribs = attributeLocationBinding ? attributeLocationBinding.length : NUM_VERTEX_ATTRIBUTES_MAX
     for(var location = 0; location < numAttribs; location++){
         var attributeName = (attributeLocationBinding && attributeLocationBinding[location]) || DEFAULT_ATTRIB_LOCATION_BINDING[location];
-        console.log('binding', location, attributeName)
         gl.bindAttribLocation(program, location, attributeName);
     }
 
@@ -124,7 +123,6 @@ Program.prototype._updateUniforms = function(){
         if (info.size > 1) {
           for (var j = 1; j < info.size; j++) {
             var name = info.name.substr(0, info.name.indexOf('[') + 1) + j + ']'
-            console.log('glsl', name, gl.getUniformLocation(program, name), info.type, gl.FLOAT_VEC3)
             uniforms[name] = {
                 type : info.type,
                 location : gl.getUniformLocation(program, name)

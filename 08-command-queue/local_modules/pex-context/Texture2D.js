@@ -10,6 +10,7 @@ function Texture2D(ctx, data, width, height, options) {
     this._width      = width  || (data && data.width ) || 0;
     this._height     = height || (data && data.height) || 0;
 
+    this.options = options
     this.update(data, width, height, options);
 }
 

@@ -170,6 +170,9 @@ Buffer.prototype.bufferData = function(sizeOrData){
                     this._data = new data_ctor(sizeOrData);
                 }
             }
+        } else if (sizeOrData.length) {
+        console.log('length')
+          throw new TypeError('Array is an unsupported data type. Use typed array.');
         } else {
             this._length     = sizeOrData;
             this._byteLength = null;
@@ -188,17 +191,26 @@ Buffer.prototype.bufferData = function(sizeOrData){
  * @param {Number} offset - The offset into the buffers data store where the data replacement will begin, measure in bytes
  * @param {Uint8Array|Uint16Array|Uint32Array|Float32Array} data - The new data that will be copied into the data store
  */
-Buffer.prototype.bufferSubData = function(offset,data){
-    var gl = this._ctx.getGL();
-    gl.bufferSubData(this._target,offset,data);
+// Buffer.prototype.bufferSubData = function(offset,data){
+    // var gl = this._ctx.getGL();
+    // gl.bufferSubData(this._target,offset,data);
 
-    if(this._preserveData && data != this._data){
-        offset = offset / this._data.BYTES_PER_ELEMENT;
-        for(var i = 0, l = this._data.length; offset < l; ++i, offset+=1){
-            this._data[offset] = data[i];
-        }
-    }
-};
+    // if(this._preserveData && data != this._data){
+        // offset = offset / this._data.BYTES_PER_ELEMENT;
+        // for(var i = 0, l = this._data.length; offset < l; ++i, offset+=1){
+            // this._data[offset] = data[i];
+        // }
+    // }
+// };
+
+Buffer.prototype.update = function (opts) {
+  const offset = opts.offset || 0
+  const ctx = this._ctx
+  const gl = ctx.getGL()
+  ctx._bindBuffer(this)
+  gl.bufferSubData(this._target, offset, opts.buffer)
+  ctx._unbindBuffer(this)
+}
 
 /**
  * Disposes the buffer and removes its content.

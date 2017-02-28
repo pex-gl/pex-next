@@ -22,9 +22,12 @@ function createContext (gl) {
     gl: gl,
     ctx: new Context(gl),
     state: { },
-    texture2D: function (data, width, height) {
-      log('texture2D', data, width, height)
-      return this.ctx.createTexture2D(data, width, height)
+    texture2D: function (data, width, height, options) {
+      log('texture2D', typeof data, width, height)
+      return this.ctx.createTexture2D(data, width, height, options)
+    },
+    framebuffer: function (opts) {
+      return this.ctx.createFramebuffer(opts.color, opts.depth)
     },
     // TODO: Should we have named versions or generic 'ctx.buffer' command?
     // In regl buffer() is ARRAY_BUFFER (aka VertexBuffer) and elements() is ELEMENTS_ARRAY_BUFFER
@@ -34,16 +37,31 @@ function createContext (gl) {
     //    type: 'float', 'uint16' etc
     // }
     vertexBuffer: function (data) {
-      return this.ctx.createBuffer(gl.ARRAY_BUFFER, new Float32Array(data), gl.STATIC_DRAW)
+      // FIXME: don't flatten if unnecesary
+      return this.ctx.createBuffer(gl.ARRAY_BUFFER, new Float32Array(R.flatten(data)), gl.STATIC_DRAW)
     },
     elementsBuffer: function (data) {
-      return this.ctx.createBuffer(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(data), gl.STATIC_DRAW)
+      // FIXME: don't flatten if unnecesary
+      return this.ctx.createBuffer(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(R.flatten(data)), gl.STATIC_DRAW)
     },
     program: function (vert, frag, vertexLayout) {
       return this.ctx.createProgram(vert, frag, vertexLayout)
     },
     command: function (spec) {
       const cmd = Object.assign({}, spec)
+
+      const allowedProps = [
+        'framebuffer', 'clearColor', 'clearDepth', 'viewport',
+        'vert', 'frag', 'uniforms',
+        'vertexLayout', 'attributes', 'elements',
+        'depthEnable'
+      ]
+
+      Object.keys(cmd).forEach((prop) => {
+        if (allowedProps.indexOf(prop) === -1) {
+          throw new Error(`pex.context.command Unknown prop "${prop}"`)
+        }
+      })
 
       if (spec.vert && spec.frag) {
         if (!spec.vertexLayout) {
@@ -59,9 +77,26 @@ function createContext (gl) {
       }
       return cmd
     },
-    submit: function (cmd) {
+    update: function (resource, opts) {
+      resource.update(opts)
+    },
+    submit: function (cmd, subCommand) {
       const gl = this.gl
       let clearBits = 0
+
+      if (cmd.framebuffer) {
+        //TODO: need to remember prev state and do diff
+        this.ctx.pushState(this.ctx.FRAMEBUFFER_BIT)
+        // TODO: push state
+        this.ctx.bindFramebuffer(cmd.framebuffer)
+      }
+
+      if (cmd.viewport) {
+        //TODO: need to remember prev state and do diff
+        this.ctx.pushState(this.ctx.VIEWPORT_BIT)
+        // TODO: push state
+        this.ctx.setViewport(cmd.viewport[0], cmd.viewport[1], cmd.viewport[2], cmd.viewport[3])
+      }
 
       // log('submit', cmd)
 
@@ -93,7 +128,7 @@ function createContext (gl) {
         let numTextures = 0
         Object.keys(cmd.uniforms).forEach((name) => {
           let value = cmd.uniforms[name]
-          if (typeof(value) === 'function') {
+          if (typeof value === 'function') {
            // log('eval', name)
             value = value()
           }
@@ -148,8 +183,18 @@ function createContext (gl) {
         // TODO: add check if available
         drawVertexData(this.state.vertexLayout, cmd)
       }
-    },
-    update: function () {
+
+      if (subCommand) {
+        subCommand()
+      }
+
+      if (cmd.framebuffer) {
+        this.ctx.popState() // FIXME: no push pop state
+      }
+
+      if (cmd.viewport) {
+        this.ctx.popState()
+      }
     }
   }
 }
