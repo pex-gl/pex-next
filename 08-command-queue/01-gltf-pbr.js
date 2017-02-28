@@ -15,7 +15,7 @@ const loadGltf = require('./local_modules/pex-gltf')
 const isBrowser = require('is-browser')
 const iterateObject = require('iterate-object')
 
-const gl = createGL(window.innerWidth, window.innerHeight)
+const gl = createGL(isBrowser ? window.innerWidth : 1280, isBrowser ? window.innerHeight : 720)
 const ctx = createContext(gl)
 
 const ASSETS_PATH = isBrowser ? 'assets' : __dirname + '/assets'
@@ -24,14 +24,18 @@ const MODEL_PATH = ASSETS_PATH + '/models/gltf/damagedHelmet/Helmet.gltf'
 const pbrVert = glsl(__dirname + '/glsl/pbr.vert')
 const pbrFrag = glsl(__dirname + '/glsl/pbr.frag')
 
+gl.canvas.addEventListener('keydown', function (e) {
+  console.log(e)
+})
+
 const camera = createCamera({
-  fov: 45,
+  fov: 45, // change that to radians
   aspect: gl.canvas.width / gl.canvas.height,
-  position: [-2, 0.5, -2],
+  position: [12, 0.5, 12],
   target: [0, 0, 0]
 })
 
-createOrbiter({ camera: camera })
+createOrbiter({ camera: camera, distance: 10 })
 
 let entities = []
 
@@ -69,7 +73,7 @@ function init (res) {
       uProjectionMatrix: camera.projectionMatrix,
       uViewMatrix: () => camera.viewMatrix,
       uInvViewMatrix: () => Mat4.invert(Mat4.copy(camera.viewMatrix)),
-      uLightPos: [5, 3, 10]
+      uLightPos: [5, 10, 10]
     }
   })
 
@@ -82,14 +86,7 @@ function init (res) {
   })
 }
 
-let once = false
 function draw () {
-  if (once) return
-
-  // FIXME: temp, stop rendering after first frame
-  if (entities.length > 0) {
-    // once = true
-  }
   ctx.submit(clearCmd)
   ctx.submit(setupPbr, () => {
     // FIXME: this should wrap entities draw calls
@@ -151,7 +148,6 @@ function buildGLTFModel (json) {
   Object.keys(json.textures).forEach((textureName) => {
     const texture = json.textures[textureName]
     texture._texture = ctx.texture2D(texture.source._img)
-    console.log('texture name')
     if (textureName.indexOf('albedo') !== -1) {
       albedoMap = texture._texture
     }
@@ -198,7 +194,7 @@ function buildGLTFModel (json) {
           buffer: primitive.attributes.NORMAL.bufferView._buffer,
           offset: primitive.attributes.NORMAL.byteOffset,
           stride: primitive.attributes.NORMAL.byteStride
-        },
+        }
       }
 
       const elements = { buffer: primitive.indices.bufferView._buffer }
@@ -266,13 +262,13 @@ function initSH (sh) {
 
 load({
   // envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_luv.bin' },
-  envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_rgbm.bin' },
-  envMapConfig: { json: 'assets/envmaps/unity_muirwood/config.json' }
+  // envMap: { binary: 'assets/envmaps/unity_muirwood/specular_panorama_ue4_1024_rgbm.bin' },
+  // envMapConfig: { json: 'assets/envmaps/unity_muirwood/config.json' }
   // envMap: { binary: 'assets/envmaps/unity_trinitatis_church/specular_panorama_ue4_1024_luv.bin' },
   // envMap: { binary: 'assets/envmaps/unity_trinitatis_church/specular_panorama_ue4_1024_rgbm.bin' },
   // envMapConfig: { json: 'assets/envmaps/unity_trinitatis_church/config.json' },
-  // envMap: { binary: 'assets/envmaps/unity_kirby_cove/specular_panorama_ue4_1024_rgbm.bin' },
-  // envMapConfig: { json: 'assets/envmaps/unity_kirby_cove/config.json' }
+  envMap: { binary: 'assets/envmaps/unity_kirby_cove/specular_panorama_ue4_1024_rgbm.bin' },
+  envMapConfig: { json: 'assets/envmaps/unity_kirby_cove/config.json' }
 }, (err, res) => {
   try {
     if (err) log('Resource loading failed', err)

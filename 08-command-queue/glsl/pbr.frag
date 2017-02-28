@@ -8,11 +8,12 @@ precision highp float;
 #pragma glslify: toLinear = require('glsl-gamma/in')
 #pragma glslify: toGamma  = require('glsl-gamma/out')
 // #pragma glslify: envMapEquirect  = require('../local_modules/glsl-envmap-equirect')
+#pragma glslify: tonemapUncharted2  = require('../local_modules/glsl-tonemap-uncharted2')
 
 varying vec3 vPositionView;
 varying vec3 vNormalView;
 varying vec2 vTexCoord;
-varying vec3 vLightPosView; // this should be uniform
+varying vec3 vLightPosView;
 
 uniform sampler2D uAlbedoMap;
 uniform sampler2D uNormalMap;
@@ -86,6 +87,10 @@ float LightingFuncGGX(vec3 N, vec3 V, vec3 L, float roughness, float F0) {
 vec3 tonemapFilmic(vec3 color) {
   vec3 x = max(vec3(0.0), color - 0.004);
   return (x * (6.2 * x + 0.5)) / (x * (6.2 * x + 1.7) + 0.06);
+}
+
+vec3 tonemapReinhard(vec3 color) {
+  return color / (1.0 + color);
 }
 
 // Source:OSG.js code
@@ -167,14 +172,15 @@ void main () {
   vec2 st1 = dFdx(vTexCoord);
   vec2 st2 = dFdy(vTexCoord);
 
+  //TODO: that estimate fails on one of the pipes, we need real tangents
   vec3 T = normalize(Q1*st2.t - Q2*st1.t);
   vec3 B = normalize(Q2*st1.s - Q1*st2.s);
 
   // the transpose of texture-to-eye space matrix
-  mat3 TBN = transpose(mat3(T, B, vNormalView));
+  vec3 normalView = normalize(vNormalView);
+  mat3 TBN = transpose(mat3(T, B, normalView));
 
   vec3 normalTangent = normalize(texture2D(uNormalMap, vTexCoord).rgb * 2.0 - 1.0);
-  vec3 lightPos = normalize(vec3(1.0, 1.0, 1.0));
   vec3 N = normalize(normalTangent * TBN);
   vec3 L = normalize(vLightPosView - vPositionView);
   vec3 V = normalize(-vPositionView);
@@ -183,36 +189,44 @@ void main () {
   invViewMatrix = inverse(uViewMatrix);
   vec3 Rworld = vec3(invViewMatrix * vec4(R, 0.0));
   vec3 Nworld = vec3(invViewMatrix * vec4(N, 0.0));
-  float diffuse = max(0.0, dot(N, L));
+  float NdotL = max(0.0, dot(N, L));
 
   float N0 = 0.02; // what's the default for non metals vs metals?
   float roughness = texture2D(uRoughnessMap, vTexCoord).r;
   float metalness = texture2D(uMetalnessMap, vTexCoord).r;
   float level = floor(roughness * 5.0);
+
+  vec3 lightColor = toLinear(vec3(1.95));
+
   // vec3 indirectSpecular = LUVToRGB(texture2D(uEnvMap, panoramaLevel(envMapEquirect(Rworld), level, 1024.0)));
   vec3 indirectSpecular = RGBMToRGB(texture2D(uEnvMap, panoramaLevel(envMapEquirect(Rworld), level, 1024.0)));
-  float specular = LightingFuncGGX(N, V, L, roughness, N0);
-  vec3 lightColor = toLinear(vec3(0.95));
+  vec3 directSpecular = lightColor * LightingFuncGGX(N, V, L, roughness, N0);
+  vec3 directDiffuse = lightColor * NdotL;
   vec3 albedo = toLinear(texture2D(uAlbedoMap, vTexCoord).rgb);
   vec3 indirectDiffuse = sh(uSh, Nworld);
   vec3 color = vec3(0.0);
   color += indirectDiffuse * albedo * (1.0 - metalness);
   color += albedo * indirectSpecular * metalness;
-  color += albedo * diffuse * lightColor * (1.0 - metalness);
-  color += specular * lightColor;
+  color += albedo * directDiffuse * (1.0 - metalness);
+  color += directSpecular;
+  // color = indirectDiffuse / 5.0;
   // color = indirectDiffuse / 5.0;
   // color = albedo;
   // color = vec3(roughness);
+  // color = vec3(albedo);
   // color = vec3(specular);
   // color = indirectSpecular;
   // color = R;
   // color = vec3(vTexCoord, 0.0);
+  // color = normalTangent;
+  // color = N;
 
-  // float exposure = 1.2;
-  // color *= exposure;
+  float exposure = 1.2;
+  color *= exposure;
 
-  color = tonemapFilmic(color); // TODO: does it have built in gamma?
+  // color = tonemapFilmic(color); // TODO: does it have built in gamma?
+  color = tonemapUncharted2(color);
   gl_FragColor.rgb = toGamma(color);
-  // gl_FragColor.rgb = color;
+  // gl_FragColor.rgb = (color);
   gl_FragColor.a = 1.0;
 }
