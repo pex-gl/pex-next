@@ -1,3 +1,5 @@
+const log = require('debug')('context/Program')
+
 var DEFAULT_ATTRIB_LOCATION_BINDING = {
     0 : 'aPosition',
     1 : 'aColor',
@@ -158,8 +160,8 @@ Program.prototype._compileSource = function(type, src){
     gl.compileShader(shader);
     if(!gl.getShaderParameter(shader, gl.COMPILE_STATUS)){
         var shaderType = (type === gl.VERTEX_SHADER) ? 'Vertex' : 'Fragment';
-        console.log(shaderType + ' shader compilation failed');
-        console.log(src);
+        log(shaderType + ' shader compilation failed');
+        log(src);
         throw new Error(shaderType + ' shader error: ' + gl.getShaderInfoLog(shader));
     }
     return shader;
@@ -213,7 +215,7 @@ Program.prototype._updateUniformSetterMap = function(){
                             throw new Error(STR_ERROR_WRONG_NUM_ARGS);
                         }
                         if(y === undefined){
-                          // console.log('glsl', entry)
+                          // log('glsl', entry)
                             gl.uniform3fv(location,x);
                         }
                         else {

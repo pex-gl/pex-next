@@ -1,8 +1,10 @@
-var isPlask = require('is-plask');
-var plask = require('plask-wrap');
+const isPlask = require('is-plask');
+const plask = require('plask-wrap');
+const log = require('debug')('context/Texture2D')
 
 //TODO: update width and height if not passed but data is Image or Canvas
 function Texture2D(ctx, data, width, height, options) {
+    log(data, width, height, options)
     this._ctx        = ctx;
     var gl           = ctx.getGL();
     this._handle     = gl.createTexture();
@@ -11,12 +13,15 @@ function Texture2D(ctx, data, width, height, options) {
     this._height     = height || (data && data.height) || 0;
 
     this.options = options
-    this.update(data, width, height, options);
+    this.update(Object.assign({}, options, { data: data, width: width, height: height }))
 }
 
 //TODO: update width and height if not passed but data is Image or Canvas
 //NOTE: flipY for compressed images is not supported
-Texture2D.prototype.update = function(data, width, height, options) {
+Texture2D.prototype.update = function(options) {
+    let width = options.width
+    let height = options.height
+    let data = options.data
     var ctx = this._ctx;
     var gl  = ctx.getGL();
 
