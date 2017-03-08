@@ -7,7 +7,8 @@ varying vec3 vNormal;
 varying vec3 vWorldPosition;
 
 void main() {
-  gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(aPosition, 1.0);
+  mat4 modelView = uViewMatrix * uModelMatrix;
+  gl_Position = uProjectionMatrix * modelView * vec4(aPosition, 1.0);
   vWorldPosition = (uModelMatrix * vec4(aPosition, 1.0)).xyz;
-  vNormal = aNormal;
+  vNormal = mat3(modelView) * aNormal;
 }

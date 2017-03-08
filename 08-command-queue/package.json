@@ -25,6 +25,7 @@
     "pex-gl": "^1.4.1",
     "pex-io": "^1.4.1",
     "pex-math": "^1.0.1",
+    "pex-random": "^1.0.1",
     "primitive-cube": "^2.0.0",
     "primitive-sphere": "^2.0.0",
     "ramda": "^0.23.0",

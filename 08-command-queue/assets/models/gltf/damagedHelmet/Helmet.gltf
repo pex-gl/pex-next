@@ -192,10 +192,6 @@
 	"scenes": {
 		"defaultScene": {
 			"nodes": [
-				"UnityGlTF_correctionMatrix",
-				"UnityGlTF_correctionMatrix",
-				"UnityGlTF_correctionMatrix",
-				"UnityGlTF_correctionMatrix",
 				"UnityGlTF_correctionMatrix"
 			]
 		}

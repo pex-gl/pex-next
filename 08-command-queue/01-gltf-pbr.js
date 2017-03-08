@@ -40,6 +40,7 @@ createOrbiter({ camera: camera, distance: 10 })
 let entities = []
 
 const clearCmd = ctx.command({
+  name: 'clear',
   clearColor: [0.5, 0.5, 0.5, 1.0],
   clearDepth: 1
 })
@@ -48,7 +49,8 @@ let setupPbr = null
 let envMap = null
 
 function init (res) {
-  envMap = ctx.texture2D(new Uint8Array(res.envMap), 1024, 1024)
+  envMap = ctx.texture2D({ data: new Uint8Array(res.envMap), width: 1024, height: 1024 })
+  envMap.id = 'envMap'
 
   // TODO: this is hack, uniforms should be somehow set after the pipeline is build
   // need to multiply values by basis functions
@@ -59,6 +61,7 @@ function init (res) {
   }
 
   setupPbr = ctx.command({
+    name: 'setupPbr',
     vert: pbrVert,
     frag: pbrFrag,
     vertexLayout: [
@@ -86,13 +89,13 @@ function init (res) {
   })
 }
 
+let frameNumber = 0
 function draw () {
+  ctx.debug((++frameNumber) === 1)
   ctx.submit(clearCmd)
   ctx.submit(setupPbr, () => {
-    // FIXME: this should wrap entities draw calls
-    entities.forEach((e) => ctx.submit(e.drawCmd)) // <--- not working currently
+    entities.forEach((e) => ctx.submit(e.drawCmd))
   })
-  entities.forEach((e) => ctx.submit(e.drawCmd))
 }
 /*
 
@@ -148,6 +151,9 @@ function buildGLTFModel (json) {
   Object.keys(json.textures).forEach((textureName) => {
     const texture = json.textures[textureName]
     texture._texture = ctx.texture2D(texture.source._img)
+    texture._texture.id = textureName
+    // const img = texture.source._img
+    // texture._texture = ctx.texture2D({ data: img })
     if (textureName.indexOf('albedo') !== -1) {
       albedoMap = texture._texture
     }
@@ -176,6 +182,7 @@ function buildGLTFModel (json) {
     const modelMatrix = parentStack.reduce(
       (modelMatrix, m) => Mat4.mult(modelMatrix, m), Mat4.scale(Mat4.create(), [1, 1, 1])
     )
+    console.log('mesh', mesh)
     mesh.primitives.forEach((primitive, primitiveIndex) => {
       // var accessorInfo = primitive.attributes.POSITION
       // var size = AttributeSizeMap[accessorInfo.type]
@@ -200,6 +207,7 @@ function buildGLTFModel (json) {
       const elements = { buffer: primitive.indices.bufferView._buffer }
 
       const drawCmd = ctx.command({
+        name: 'draw',
         attributes: attributes,
         elements: elements,
         // FIXME: what's a better way to handle that?

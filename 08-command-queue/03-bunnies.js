@@ -27,8 +27,11 @@ const bunny = require('bunny')
 const normals = require('normals')
 const centerAndNormalize = require('geom-center-and-normalize')
 const Vec3 = require('pex-math/Vec3')
+const Mat4 = require('pex-math/Mat4')
+const Quat = require('pex-math/Quat')
 const SimplexNoise = require('simplex-noise')
 const R = require('ramda')
+const random = require('pex-random')
 
 // math
 // var createMat4 = require('gl-mat4/create')
@@ -45,7 +48,6 @@ const createGL = require('./local_modules/pex-gl')
 const frame = require('./frame')
 const createCamera = require('pex-cam/perspective')
 const createOrbiter = require('pex-cam/orbiter')
-const Mat4 = require('pex-math/Mat4')
 // const load = require('pex-io/load')
 const glsl = require('glslify')
 const isBrowser = require('is-browser')
@@ -74,7 +76,7 @@ const lightCamera = createCamera({
   target: [0, 0, 0]
 })
 
-const depthMapSize = 512
+const depthMapSize = 1024
 const depthMap = ctx.texture2D({ width: depthMapSize, height: depthMapSize, format: gl.DEPTH_COMPONENT, type: gl.UNSIGNED_SHORT, minFilter: gl.NEAREST, magFilter: gl.NEAREST })
 const colorMap = ctx.texture2D({ width: depthMapSize, height: depthMapSize })
 
@@ -84,10 +86,9 @@ const shadowFramebuffer = ctx.framebuffer({ color: [ { texture: colorMap } ], de
 // TODO: i could probably replace framebuffer with color, depth, stencil attachments props
 // same way we don't declare vertex array, fbo would be created on demand?
 const depthPassCmd = ctx.command({
-  name: 'depthPass',
   framebuffer: shadowFramebuffer,
   viewport: [0, 0, depthMapSize, depthMapSize],
-  clearColor: [1, 1, 0, 1],
+  clearColor: [1, 0, 0, 1],
   clearDepth: 1
 })
 
@@ -99,32 +100,27 @@ const shadowMappedFrag = glsl(__dirname + '/glsl/shadow-mapped.frag')
 // BlitFrag: glslify(__dirname + '/sh/materials/Blit.frag')
 
 const clearCmd = ctx.command({
-  name: 'clear',
   clearColor: [0.5, 0.5, 0.5, 1.0],
   clearDepth: 1
 })
 
 const floor = createCube(5, 0.1, 5)
-const floorPositionsBuf = ctx.vertexBuffer(floor.positions)
-const floorNormalsBuf = ctx.vertexBuffer(floor.normals)
-
 const drawFloorCmd = ctx.command({
-  name: 'drawFloor',
   vert: shadowMappedVert,
   frag: shadowMappedFrag,
   uniforms: {
     uProjectionMatrix: camera.projectionMatrix,
     uViewMatrix: camera.viewMatrix,
     uModelMatrix: Mat4.create(),
-   uWrap: 0,
-   uLightNear: lightCamera.near,
-   uLightFar: lightCamera.far,
-   uLightProjectionMatrix: lightCamera.projectionMatrix,
-   uLightViewMatrix: lightCamera.viewMatrix,
-   uLightPos: lightCamera.position,
-   uDepthMap: depthMap,
-   uAmbientColor: [0, 0, 0, 1],
-   uDiffuseColor: [1, 1, 1, 1]
+    uWrap: 0,
+    uLightNear: lightCamera.near,
+    uLightFar: lightCamera.far,
+    uLightProjectionMatrix: lightCamera.projectionMatrix,
+    uLightViewMatrix: lightCamera.viewMatrix,
+    uLightPos: lightCamera.position,
+    uDepthMap: depthMap,
+    uAmbientColor: [0, 0, 0, 1],
+    uDiffuseColor: [1, 1, 1, 1]
   },
   vertexLayout: [
     // FIXME: second parameter 'location' is redundand?
@@ -134,10 +130,10 @@ const drawFloorCmd = ctx.command({
   ],
   attributes: {
     aPosition: {
-      buffer: floorPositionsBuf
+      buffer: ctx.vertexBuffer(floor.positions)
     },
     aNormal: {
-      buffer: floorNormalsBuf
+      buffer: ctx.vertexBuffer(floor.normals)
     }
   },
   // FIXME: rename this to indexBuffer?
@@ -148,7 +144,6 @@ const drawFloorCmd = ctx.command({
 })
 
 const drawFloorDepthCmd = ctx.command({
-  name: 'drawFloorDepth',
   vert: showNormalsVert,
   frag: showNormalsFrag,
   uniforms: {
@@ -162,10 +157,10 @@ const drawFloorDepthCmd = ctx.command({
   ],
   attributes: {
     aPosition: {
-      buffer: floorPositionsBuf
+      buffer: ctx.vertexBuffer(floor.positions)
     },
     aNormal: {
-      buffer: floorNormalsBuf
+      buffer: ctx.vertexBuffer(floor.normals)
     }
   },
   // FIXME: rename this to indexBuffer?
@@ -183,7 +178,6 @@ const bunnyPositionBuffer = ctx.vertexBuffer(bunnyBaseVertices)
 const bunnyNormalBuffer = ctx.vertexBuffer(bunnyBaseNormals)
 
 const drawBunnyCmd = ctx.command({
-  name: 'drawBunny',
   vert: shadowMappedVert,
   frag: shadowMappedFrag,
   uniforms: {
@@ -225,7 +219,6 @@ const drawBunnyCmd = ctx.command({
 })
 
 const drawBunnyDepthCmd = ctx.command({
-  name: 'drawBunnyDepth',
   vert: showNormalsVert,
   frag: showNormalsFrag,
   uniforms: {
@@ -306,7 +299,6 @@ function updateBunny (ctx) {
 }
 
 const drawFullscreenQuadCmd = ctx.command({
-  name: 'drawFullscreenQuad',
   vert: glsl(__dirname + '/glsl/screen-image.vert'),
   frag: glsl(__dirname + '/glsl/screen-image.frag'),
   vertexLayout: [
@@ -329,8 +321,32 @@ const drawFullscreenQuadCmd = ctx.command({
 
 // console.time('frame')
 
-let frameNumber = 0
+const shadowBatches = []
+const batches = []
+const numBunnies = 500
+for (let i = 0; i < numBunnies; i++) {
+  const pos = [random.float(-5, 5), random.float(0, 5), random.float(-5, 5)]
+  const color = [random.float(), random.float(), random.float(), 1.0]
+  const m = Mat4.create()
+  Mat4.translate(m, pos)
+  Mat4.mult(m, Mat4.fromQuat(Mat4.create(), Quat.fromDirection(Quat.create(), random.vec3())))
+  Mat4.scale(m, [0.2, 0.2, 0.2])
 
+  shadowBatches.push({
+    uniforms: {
+      uModelMatrix: m
+    }
+  })
+  batches.push({
+    uniforms: {
+      uModelMatrix: m,
+      uDiffuseColor: color
+    }
+  })
+}
+
+let frameNumber = 0
+// console.time('frame')
 frame(() => {
   // console.timeEnd('frame')
   // console.time('frame')
@@ -340,10 +356,10 @@ frame(() => {
   ctx.debug((++frameNumber) === 1)
   ctx.submit(depthPassCmd, () => {
     ctx.submit(drawFloorDepthCmd)
-    ctx.submit(drawBunnyDepthCmd)
+    ctx.submit(drawBunnyDepthCmd, shadowBatches)
   })
   ctx.submit(clearCmd)
   ctx.submit(drawFloorCmd)
-  ctx.submit(drawBunnyCmd)
+  ctx.submit(drawBunnyCmd, batches)
   ctx.submit(drawFullscreenQuadCmd)
 })

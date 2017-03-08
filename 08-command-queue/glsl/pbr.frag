@@ -210,7 +210,6 @@ void main () {
   color += albedo * directDiffuse * (1.0 - metalness);
   color += directSpecular;
   // color = indirectDiffuse / 5.0;
-  // color = indirectDiffuse / 5.0;
   // color = albedo;
   // color = vec3(roughness);
   // color = vec3(albedo);
