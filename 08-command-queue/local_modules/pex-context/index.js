@@ -1,7 +1,7 @@
 const Context = require('./Context')
 const R = require('ramda')
 const log = require('debug')('context')
-const viz = require('viz.js')
+// const viz = require('viz.js')
 
 // command documentation
 // vert: String
@@ -72,15 +72,15 @@ function createContext (gl) {
             }
           })
           this.debugGraph += '}'
-          const div = document.createElement('div')
           console.log(this.debugGraph)
-          div.innerHTML = viz(this.debugGraph)
-          div.style.position = 'absolute'
-          div.style.top = '0'
-          div.style.left = '0'
-          div.style.transformOrigin = '0 0'
-          div.style.transform = 'scale(0.75, 0.75)'
-          document.body.appendChild(div)
+          // const div = document.createElement('div')
+          // div.innerHTML = viz(this.debugGraph)
+          // div.style.position = 'absolute'
+          // div.style.top = '0'
+          // div.style.left = '0'
+          // div.style.transformOrigin = '0 0'
+          // div.style.transform = 'scale(0.75, 0.75)'
+          // document.body.appendChild(div)
           this.debugGraph = ''
           this.debugCommands.length = 0
         }
