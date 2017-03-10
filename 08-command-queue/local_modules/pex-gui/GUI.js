@@ -4,7 +4,7 @@ var Renderer = isPlask ? require('./SkiaRenderer') : require('./HTMLCanvasRender
 var Rect = require('pex-geom/Rect')
 var KeyboardEvent = require('pex-sys/KeyboardEvent')
 var Time = require('pex-sys/Time')
-const Signal = require('signals')
+// const Signal = require('signals')
 
 var VERT = `
 attribute vec2 aPosition;
@@ -76,13 +76,13 @@ TEXTURE_2D_FRAG = TEXTURE_2D_FRAG.split(';').join(';\n')
  * @param {[type]} windowWidth  [description]
  * @param {[type]} windowHeight [description]
  */
-function GUI (regl, windowWidth, windowHeight, pixelRatio) {
+function GUI (ctx, windowWidth, windowHeight, pixelRatio) {
   pixelRatio = pixelRatio || 1
-  this._regl = regl
+  this._ctx = ctx
   this._pixelRatio = pixelRatio
   this._windowWidth = windowWidth
   this._windowHeight = windowHeight
-  this._windowSize = [this._windowWidth, this._windowHeight]
+  this._windowSize = [windowWidth, windowHeight]
   this._textureRect = [0, 0, windowWidth, windowHeight]
   this._textureTmpRect = [0, 0, 0, 0]
   this._timeSinceLastUpdate = 0
@@ -96,81 +96,79 @@ function GUI (regl, windowWidth, windowHeight, pixelRatio) {
   var rectTexCoords = [[0, 0], [1, 0], [1, 1], [0, 1]]
   var rectIndices = [[0, 1, 2], [0, 2, 3]]
 
-  /*
-  ctx.pushState(ctx.DEPTH_BIT | ctx.BLEND_BIT)
-  ctx.setDepthTest(false)
-  ctx.setBlend(true)
-  ctx.setBlendFunc(ctx.SRC_ALPHA, ctx.ONE_MINUS_SRC_ALPHA)
-  ctx.bindProgram(this.texture2DProgram)
-  this.texture2DProgram.setUniform('uTexture', 0)
-  this.texture2DProgram.setUniform('uWindowSize', this._windowSize)
-  this.texture2DProgram.setUniform('uRect', this._textureRect)
-  ctx.bindMesh(this.rectMesh)
-  ctx.bindTexture(this.renderer.getTexture())
-  ctx.drawMesh()
-  ctx.bindProgram(this.textureCubeProgram)
-  this.textureCubeProgram.setUniform('uTexture', 0)
-  this.textureCubeProgram.setUniform('uWindowSize', this._windowSize)
-  */
-  this.drawTexture2d = regl({
+
+  // TODO
+  this.drawTexture2dCmd = ctx.command({
+    name: 'gui_drawTexture2d',
     vert: VERT,
     frag: TEXTURE_2D_FRAG,
+    vertexLayout: [
+      ['aPosition', 0, 2],
+      ['aTexCoord0', 1, 2]
+    ],
+    viewport: [0, 0, windowWidth, windowHeight],
     attributes: {
-      aPosition: rectPositions,
-      aTexCoord0: rectTexCoords
+      aPosition: { buffer: ctx.vertexBuffer(rectPositions) },
+      aTexCoord0: { buffer: ctx.vertexBuffer(rectTexCoords) }
     },
-    elements: rectIndices,
+    elements: { buffer: ctx.elementsBuffer(rectIndices) },
     uniforms: {
-      uTexture: regl.prop('texture'),
-      uWindowSize: (context) => [context.viewportWidth, context.viewportHeight],
-      uRect: regl.prop('rect'),
-      uHDR: regl.prop('hdr')
+      // uTexture: regl.prop('texture'),
+      // uWindowSize: (context) => [context.viewportWidth, context.viewportHeight],
+      // uRect: regl.prop('rect'),
+      // uHDR: regl.prop('hdr')
     },
-    depth: {
-      enable: false
-    },
-    blend: {
-      enable: true,
-      func: {
-        srcRGB: 'src alpha',
-        srcAlpha: 1,
-        dstRGB: 'one minus src alpha',
-        dstAlpha: 1
-      }
-    }
+    // TODO: what about depth write?
+    depthEnable: false,
+    blendEnabled: true,
+    blendSrcRGBFactor: ctx.BlendFactor.SrcAlpha,
+    blendSrcAlphaFactor: ctx.BlendFactor.One,
+    blendDstRGBFactor: ctx.BlendFactor.OneMinusSrcAlpha,
+    blendDstAlphaFactor: ctx.BlendFactor.One
   })
-
-  this.drawTextureCube = regl({
-    vert: VERT,
-    frag: TEXTURE_CUBE_FRAG,
-    attributes: {
-      aPosition: rectPositions,
-      aTexCoord0: rectTexCoords
-    },
-    elements: rectIndices,
-    uniforms: {
-      uTexture: regl.prop('texture'),
-      uWindowSize: (context) => [context.viewportWidth, context.viewportHeight],
-      uRect: regl.prop('rect'),
-      uHDR: regl.prop('hdr'),
-      uFlipEnvMap: regl.prop('flipEnvMap'),
-      uLevel: regl.prop('level')
-    },
-    depth: {
-      enable: false
-    },
-    blend: {
-      enable: true,
-      func: {
-        srcRGB: 'src alpha',
-        srcAlpha: 1,
-        dstRGB: 'one minus src alpha',
-        dstAlpha: 1
+  this.drawTexture2d = (props) => {
+    ctx.submit(this.drawTexture2dCmd, {
+      uniforms: {
+        uTexture: props.texture,
+        uWindowSize: this._windowSize,
+        uRect: props.rect,
+        uHDR: props.hdr
       }
-    }
-  })
+    })
+  }
 
-  this.renderer = new Renderer(regl, windowWidth, windowHeight, pixelRatio)
+  // TODO
+  // this.drawTextureCube = regl({
+    // vert: VERT,
+    // frag: TEXTURE_CUBE_FRAG,
+    // attributes: {
+      // aPosition: rectPositions,
+      // aTexCoord0: rectTexCoords
+    // },
+    // elements: rectIndices,
+    // uniforms: {
+      // uTexture: regl.prop('texture'),
+      // uWindowSize: (context) => [context.viewportWidth, context.viewportHeight],
+      // uRect: regl.prop('rect'),
+      // uHDR: regl.prop('hdr'),
+      // uFlipEnvMap: regl.prop('flipEnvMap'),
+      // uLevel: regl.prop('level')
+    // },
+    // depth: {
+      // enable: false
+    // },
+    // blend: {
+      // enable: true,
+      // func: {
+        // srcRGB: 'src alpha',
+        // srcAlpha: 1,
+        // dstRGB: 'one minus src alpha',
+        // dstAlpha: 1
+      // }
+    // }
+  // })
+
+  this.renderer = new Renderer(ctx, windowWidth, windowHeight, pixelRatio)
 
   this.screenBounds = [0, 0, windowWidth, windowHeight]
 

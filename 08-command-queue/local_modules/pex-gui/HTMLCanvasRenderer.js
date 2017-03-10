@@ -11,12 +11,12 @@ function floatRgb2Hex (rgb) {
  * @param {[type]} width  [description]
  * @param {[type]} height [description]
  */
-function HTMLCanvasRenderer (regl, width, height, pixelRatio) {
-  this._regl = regl
+function HTMLCanvasRenderer (ctx, width, height, pixelRatio) {
+  this._ctx = ctx
   this.pixelRatio = pixelRatio || 1
   this.canvas = document.createElement('canvas')
   // TODO: move this up
-  this.tex = regl.texture({ width: width, height: height })
+  this.tex = ctx.texture2D({ width: width, height: height })
   this.canvas.width = width
   this.canvas.height = height
   this.ctx = this.canvas.getContext('2d')
@@ -325,7 +325,7 @@ HTMLCanvasRenderer.prototype.getImageColor = function (image, x, y) {
 HTMLCanvasRenderer.prototype.updateTexture = function () {
   // var gl = this.gl
 
-  this.tex.subimage({
+  this._ctx.update(this.tex, {
     data: this.canvas,
     width: this.canvas.width,
     height: this.canvas.height,
