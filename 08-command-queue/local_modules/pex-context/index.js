@@ -21,17 +21,6 @@ const log = require('debug')('context')
 let ID = 0
 
 function createContext (gl) {
-  const defaultState = {
-    clearColor: [0, 0, 0, 1],
-    clearDepth: 1,
-    program: undefined,
-    framebuffer: undefined,
-    attribures: undefined,
-    vertexLayout: undefined,
-    viewport: [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight],
-    depthEnable: false
-  }
-
   const PixelFormat = {
     RGBA8: 'rgba8', // gl.RGBA + gl.UNSIGNED_BYTE
     RGBA32F: 'rgba32f', // gl.RGBA + gl.FLOAT
@@ -45,13 +34,34 @@ function createContext (gl) {
     OneMinusSrcAlpha: gl.ONE_MINUS_SRC_ALPHA
   }
 
+  const Face = {
+    Front: gl.FRONT,
+    Back: gl.BACK,
+    FrontAndBack: gl.FRONT_AND_BACK
+  }
+
   const ctx = new Context(gl)
+
+  const defaultState = {
+    clearColor: [0, 0, 0, 1],
+    clearDepth: 1,
+    program: undefined,
+    framebuffer: undefined,
+    attribures: undefined,
+    vertexLayout: undefined,
+    viewport: [0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight],
+    depthEnable: false,
+    blendEnabled: false,
+    cullFaceEnabled: false,
+    cullFace: Face.Back
+  }
 
   return {
     gl: gl,
     ctx: ctx,
     PixelFormat: PixelFormat,
     BlendFactor: BlendFactor,
+    Face: Face,
     debugMode: false,
     debugGraph: '',
     debugCommands: [],
@@ -131,6 +141,8 @@ function createContext (gl) {
           } else {
             throw new Error(`Unknown texture pixel format "${opts.format}"`)
           }
+        } else if (opts.type) {
+          throw new Error(`Texture2D type not supported. Use format:PixelFormat instead`)
         }
         const res = this.ctx.createTexture2D(opts.data, opts.width, opts.height, opts)
         res.id = 'texture2D_' + ID++
@@ -230,7 +242,8 @@ function createContext (gl) {
         'vertexLayout', 'attributes', 'elements',
         'count', 'primitive', 'offset', // TODO: not yet supported but needed for GLTF
         'depthEnable',
-        'blendEnabled', 'blendSrcRGBFactor', 'blendSrcAlphaFactor', 'blendDstRGBFactor', 'blendDstAlphaFactor'
+        'blendEnabled', 'blendSrcRGBFactor', 'blendSrcAlphaFactor', 'blendDstRGBFactor', 'blendDstAlphaFactor',
+        'cullFaceEnabled', 'cullFace'
       ]
 
       Object.keys(cmd).forEach((prop) => {
@@ -367,6 +380,14 @@ function createContext (gl) {
         }
       }
 
+      if (cmd.cullFaceEnabled !== state.cullFaceEnabled) {
+        state.cullFaceEnabled = cmd.cullFaceEnabled
+        state.cullFaceEnabled ? gl.enable(gl.CULL_FACE) : gl.disable(gl.CULL_FACE)
+        if (state.cullFaceEnabled) {
+          gl.cullFace(state.cullFace)
+        }
+      }
+
       // TODO: depthMask: false, depthWrite?
 
       if (cmd.program !== state.program) {
@@ -419,7 +440,8 @@ function createContext (gl) {
           }
         })
         if (requiredUniforms.length > 0) {
-          throw new Error(`Trying to drawign with missing uniforms: ${requiredUniforms.join(', ')}`)
+          log('invalid command', cmd)
+          throw new Error(`Trying to draw with missing uniforms: ${requiredUniforms.join(', ')}`)
         }
 
         if (vertexLayout.length !== Object.keys(state.program._attributes).length) {
