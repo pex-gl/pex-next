@@ -42,8 +42,8 @@ Texture2D.prototype.update = function(options) {
     var flipY           = (options && options.flipY !== undefined) ? options.flipY : true;
 
     var repeat          = (options && options.repeat    ) || false;
-    var magFilter       = (options && options.magFilter ) || gl.LINEAR;
-    var minFilter       = (options && options.minFilter ) || gl.LINEAR;
+    var magFilter       = (options && options.magFilter ) || gl.NEAREST;
+    var minFilter       = (options && options.minFilter ) || gl.NEAREST;
 
     if (options && options.mipmap) {
         minFilter = gl.LINEAR_MIPMAP_LINEAR;
