@@ -110,7 +110,7 @@ HTMLCanvasRenderer.prototype.draw = function (items, scale) {
     if (e.type === 'color') eh = 20 + (e.options.alpha ? 4 : 3) * 14 * scale
     if (e.type === 'color' && e.options.paletteImage) eh += (w * e.options.paletteImage.height / e.options.paletteImage.width + 2) * scale
     if (e.type === 'button') eh = 24 * scale
-    if (e.type === 'texture2D') eh = 24 + e.texture.height * w / e.texture.width
+    if (e.type === 'texture2D') eh = 24 + e.texture.getHeight() * w / e.texture.getWidth()
     if (e.type === 'textureCube') eh = 24 + w / 2
     if (e.type === 'radiolist') eh = 18 + e.items.length * 20 * scale
     if (e.type === 'texturelist') {
