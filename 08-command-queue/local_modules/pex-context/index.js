@@ -53,7 +53,8 @@ function createContext (gl) {
     depthEnable: false,
     blendEnabled: false,
     cullFaceEnabled: false,
-    cullFace: Face.Back
+    cullFace: Face.Back,
+    activeTextures: []
   }
 
   return {
@@ -428,7 +429,10 @@ function createContext (gl) {
             // FIXME: texture binding hack
             const slot = numTextures++
             gl.activeTexture(gl.TEXTURE0 + slot)
-            gl.bindTexture(value._target, value._handle)
+            if (state.activeTextures[slot] !== value.id) {
+              gl.bindTexture(value._target, value._handle)
+              state.activeTextures[slot] = value.id
+            }
             state.program.setUniform(name, slot)
             requiredUniforms.splice(requiredUniforms.indexOf(name), 1)
           } else if (!Array.isArray(value) && typeof value === 'object') {
